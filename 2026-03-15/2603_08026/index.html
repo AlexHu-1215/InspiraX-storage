@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DyLLM: Efficient Diffusion LLM Inference via Saliency-based Token Selection and Partial Attention</title>
+    <!-- KaTeX for LaTeX formula rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false}
+            ],
+            throwOnError: false
+        });"></script>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --fg: #1a1a2e;
+            --accent: #3a86ff;
+            --border: #e0e0e0;
+            --code-bg: #f5f5f5;
+            --blockquote-border: #3a86ff;
+            --blockquote-bg: #f0f4ff;
+            --fig-bg: #fafafa;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #1a1a2e;
+                --fg: #e0e0e0;
+                --accent: #6db3f2;
+                --border: #333355;
+                --code-bg: #16213e;
+                --blockquote-border: #6db3f2;
+                --blockquote-bg: #16213e;
+                --fig-bg: #16213e;
+            }
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.7;
+            color: var(--fg);
+            background: var(--bg);
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+        .header {
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 1.6rem;
+            line-height: 1.3;
+            margin-bottom: 0.8rem;
+        }
+        .meta { color: #666; font-size: 0.9rem; }
+        .meta a { color: var(--accent); text-decoration: none; }
+        .meta a:hover { text-decoration: underline; }
+        .meta p { margin-bottom: 0.3rem; }
+        .content h2 {
+            font-size: 1.3rem;
+            margin-top: 2rem;
+            margin-bottom: 0.8rem;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem;
+        }
+        .content h3 {
+            font-size: 1.1rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .content p { margin-bottom: 1rem; }
+        .content ul, .content ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+        .content li { margin-bottom: 0.4rem; }
+        .content blockquote {
+            border-left: 4px solid var(--blockquote-border);
+            background: var(--blockquote-bg);
+            padding: 0.8rem 1.2rem;
+            margin: 1rem 0;
+            font-style: italic;
+        }
+        .content code {
+            background: var(--code-bg);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        .content pre {
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+        .content pre code {
+            background: none;
+            padding: 0;
+        }
+        .content img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            display: block;
+            margin: 0 auto;
+        }
+        .content figure {
+            background: var(--fig-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+        .content figure img {
+            border: none;
+            margin: 0 auto 0.5rem;
+        }
+        .content figcaption {
+            font-size: 0.85rem;
+            color: #666;
+            font-style: italic;
+        }
+        .content strong { font-weight: 600; }
+        .footer {
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.85rem;
+            color: #999;
+        }
+        .katex-display {
+            overflow-x: auto;
+            padding: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>DyLLM: Efficient Diffusion LLM Inference via Saliency-based Token Selection and Partial Attention</h1>
+        <div class="meta">
+            <p><strong>Authors:</strong> Younjoo Lee, Junghoo Lee, Seungkyun Dan, Jaiyoung Park, Jung Ho Ahn</p>
+            
+            <p><strong>arXiv:</strong> <a href="https://arxiv.org/abs/2603.08026v1" target="_blank">https://arxiv.org/abs/2603.08026v1</a></p>
+            <p><strong>Published:</strong> 2026-03-09T07:02:01+00:00</p>
+            <p><strong>Generated by:</strong> InspiraX on 2026-03-15</p>
+        </div>
+    </div>
+
+    <div class="content">
+        <h1>Summary of DyLLM: Efficient Diffusion LLM Inference via Saliency-based Token Selection and Partial Attention</h1>
+
+<h2>1. Overview</h2>
+<p>Masked Diffusion Language Models (MDLMs) enable parallel token decoding, a promising alternative to slow sequential autoregressive LLM generation, but suffer from high computational overhead: their iterative denoising process reprocesses the entire sequence at every step, unlike autoregressive models that leverage incremental KV caching. The key insight motivating this work is that most token representations remain stable across consecutive diffusion steps, with only a small subset of "salient tokens" undergoing meaningful changes that contribute to generation quality. DyLLM is a training-free inference framework that exploits this temporal sparsity to accelerate MDLM decoding by selectively computing only salient tokens, while reusing cached activations for stable non-salient tokens. It delivers up to 9.6x higher throughput on state-of-the-art MDLMs (LLaDA, Dream) while preserving or improving baseline accuracy across reasoning, code, and general knowledge benchmarks.</p>
+
+<h2>2. Key Contributions</h2>
+<ul>
+<li><strong>Layer-adaptive saliency mechanism</strong>: A dynamic, threshold-based policy that identifies salient tokens per layer using cosine similarity of attention contexts between adjacent denoising steps, eliminating redundant Feed-Forward Network (FFN) computation for stable tokens without retraining.</li>
+<li><strong>Saliency-aware approximate attention</strong>: A low-complexity attention implementation that reduces quadratic sequence length overhead by computing exact attention only for salient tokens, while approximating context updates for non-salient tokens using cached values with provable error bounds.</li>
+<li><strong>Scalable training-free framework</strong>: Evaluated across LLaDA 8B and Dream 7B MDLMs, DyLLM achieves up to 7.6x and 9.6x throughput improvements respectively across diverse benchmarks, outperforming state-of-the-art MDLM acceleration baselines (Fast-dLLM, dLLM-Cache) while maintaining or improving generation quality.</li>
+</ul>
+<h2>3. Method</h2>
+<p>DyLLM operates in two phases: an initial warmup phase of 4 full sequence passes to initialize caches, followed by an accelerated refinement phase that only processes salient tokens per layer and step.</p>
+<blockquote><p>Across consecutive diffusion steps, the majority of token representations remain stable; only a small subset, which we term salient tokens, undergoes meaningful transitions that contribute to the next update.</p></blockquote>
+
+<h3>3.1 Motivation and Temporal Sparsity Observation</h3>
+<p>The per-step compute overhead of baseline MDLMs is illustrated in Figure 1, which shows that MDLM runtime is dominated by repeated full-sequence FFN and attention computation, unlike autoregressive LLMs that have low per-step overhead after prefill.</p>
+<figure><img src="figures/runtime_breakdown.png" alt="Runtime breakdown of autoregressive LLM, baseline MDLM, and DyLLM inference on GSM8K prompts" loading="lazy"><figcaption>Runtime breakdown of autoregressive LLM, baseline MDLM, and DyLLM inference on GSM8K prompts</figcaption></figure>
+
+<p>To quantify representation stability, the authors define <strong>temporal cosine similarity</strong> for token $i$ at layer $l$, step $t$:</p>
+<p>$$</p>
+<p>s_{t,l}^{(i)} = \frac{C_{t,l}^{(i)} \cdot C_{t-1,l}^{(i)}}{\|C_{t,l}^{(i)}\| \|C_{t-1,l}^{(i)}\|}</p>
+<p>$$</p>
+<p>where $C_{t,l}^{(i)}$ is the attention context vector for the token. This metric measures directional alignment of attention contexts between consecutive steps, with values near 1 indicating nearly identical representations.</p>
+<figure><img src="figures/cosine_similarity_3d.png" alt="3D distribution of temporal cosine similarity across layers and diffusion steps for GSM8K prompts" loading="lazy"><figcaption>3D distribution of temporal cosine similarity across layers and diffusion steps for GSM8K prompts</figcaption></figure>
+<p>As shown in Figure 2, most tokens have $s_{t,l}^{(i)} \approx 1$ across all layers, with stability higher in early layers and more variation in deeper layers. The number of salient tokens (with $s < \tau$ threshold) remains small across all steps, as shown in Figure 3 and extended results in Figure 4:</p>
+<figure><img src="figures/num_salient.png" alt="Number of salient tokens per step across layers for LLaDA on GSM8K" loading="lazy"><figcaption>Number of salient tokens per step across layers for LLaDA on GSM8K</figcaption></figure>
+<figure><img src="figures/appendix_numsal.png" alt="Additional salient token count results across benchmarks and models" loading="lazy"><figcaption>Additional salient token count results across benchmarks and models</figcaption></figure>
+
+<h3>3.2 Saliency Detection and FFN Optimization</h3>
+<p>Salient tokens are defined as $\mathcal{A}_{t,l} = \{i \mid s_{t,l}^{(i)} \leq \tau\}$, where $\tau$ is a configurable threshold. Non-salient tokens skip FFN computation entirely, reusing cached activations from the previous step. Two formal propositions validate this approach:</p>
+<ol>
+<li><strong>Scale Invariance under Linear Projection</strong>:</li>
+</ol>
+<p>$$</p>
+<p>\text{RMSNorm}((\alpha C) W_o) = \text{RMSNorm}(C W_o)</p>
+<p>$$</p>
+<p>This shows that only the direction (not magnitude) of the attention context matters for downstream FFN input, validating cosine similarity as a suitable saliency metric.</p>
+<ol>
+<li><strong>Error Bound via Directional Alignment</strong>:</li>
+</ol>
+<p>$$</p>
+<p>\delta \leq \kappa(W_o)\sqrt{2(1 - s_{t,l})}</p>
+<p>$$</p>
+<p>where $\delta$ is the approximation error from reusing cached FFN output, and $\kappa(W_o)$ is the condition number of the attention output projection matrix. This confirms that error is bounded by the cosine similarity, so reusing outputs for high-similarity tokens introduces negligible error.</p>
+
+<h3>3.3 Saliency-Aware Approximate Attention</h3>
+<p>To reduce the quadratic complexity of full attention, the authors decompose the temporal change in attention context:</p>
+<p>$$</p>
+<p>\Delta C_{t,l} = (S_{t-1, l} + \Delta S)\Delta V + (\Delta S)V_{t-1,l}</p>
+<p>$$</p>
+<p>where $\Delta S$ and $\Delta V$ are changes in attention scores and value matrices between steps. The dual-path approximate attention mechanism uses this decomposition (Figure 5):</p>
+<ul>
+<li><strong>Salient Path</strong>: For tokens $i \in \mathcal{A}_{t,l}$, compute exact full attention to capture all context updates.</li>
+<li><strong>Non-salient Path</strong>: For tokens $i \notin \mathcal{A}_{t,l}$, approximate updates as $S_{t,l}^{(i,\cdot)} \Delta V_{t,l}$, only incorporating changes from salient tokens, reducing complexity from $O(N^2d)$ to $O(N|\mathcal{A}_{t,l}|d)$.</li>
+</ul>
+<figure><img src="figures/approximate_attention.png" alt="Saliency-aware approximate attention workflow" loading="lazy"><figcaption>Saliency-aware approximate attention workflow</figcaption></figure>
+<p>The fidelity of this approximation is validated in Figure 6, which shows that the cosine error between approximate and exact attention is near zero for most tokens:</p>
+<figure><img src="figures/cosine_error_cdf_subplots.png" alt="CDF of cosine similarity error between approximate and exact attention" loading="lazy"><figcaption>CDF of cosine similarity error between approximate and exact attention</figcaption></figure>
+
+<h3>3.4 Response-Only Optimization</h3>
+<p>Leveraging the locality bias of Rotary Positional Embeddings (RoPE), DyLLM prioritizes response tokens for saliency checks, as stable prompt tokens rarely become salient. Full sequence processing is only done periodically (every 4 steps) to refresh prompt context, with only salient tokens processed even during these refresh steps.</p>
+<p>The overall DyLLM architecture is summarized below:</p>
+<figure><img src="figures/dllm_architecture.png" alt="DyLLM end-to-end inference framework architecture" loading="lazy"><figcaption>DyLLM end-to-end inference framework architecture</figcaption></figure>
+
+<h2>4. Experiments</h2>
+<p>All experiments were run on a single NVIDIA H100 80GB GPU, evaluating LLaDA 8B and Dream 7B instruct models against baselines: original MDLM implementation, Fast-dLLM, and dLLM-Cache. Benchmarks include mathematical reasoning (GSM8K, MATH), general knowledge (MMLU-pro), and code generation (MBPP).</p>
+
+<h3>4.1 Main Results</h3>
+<p>DyLLM consistently outperforms all baselines in throughput while preserving or improving accuracy:</p>
+<ul>
+<li>For LLaDA 8B: 4.57x to 7.6x throughput gain, with accuracy matching or exceeding baseline across all benchmarks.</li>
+<li>For Dream 7B: 6.6x to 9.6x throughput gain, with up to 4% accuracy improvement on GSM8K and MATH benchmarks.</li>
+</ul>
+<p>The full accuracy-throughput tradeoff across all benchmarks and threshold settings is shown in Figure 7:</p>
+<figure><img src="figures/eight_plots.png" alt="Throughput and accuracy tradeoff across all benchmarks, models, and threshold settings" loading="lazy"><figcaption>Throughput and accuracy tradeoff across all benchmarks, models, and threshold settings</figcaption></figure>
+
+<h3>4.2 Ablation Studies</h3>
+<p>Ablations validate the impact of the similarity threshold $\tau$ on accuracy and throughput:</p>
+<ul>
+<li>Lower $\tau$ selects fewer salient tokens, increasing throughput but potentially introducing minor accuracy loss, while higher $\tau$ is more conservative.</li>
+<li>The optimal $\tau$ (0.99 for LLaDA, 0.995 for Dream) delivers near-maximal throughput with negligible or positive accuracy impact, as shown in the ablation plots for GSM8K/MBPP (Figure 8) and MATH/MMLU-pro (Figure 9):</li>
+</ul>
+<figure><img src="figures/ablation_gsm_mbpp.png" alt="Ablation results for threshold τ on GSM8K and MBPP benchmarks" loading="lazy"><figcaption>Ablation results for threshold τ on GSM8K and MBPP benchmarks</figcaption></figure>
+<figure><img src="figures/ablation_math_mmlu.png" alt="Ablation results for threshold τ on MATH and MMLU-pro benchmarks" loading="lazy"><figcaption>Ablation results for threshold τ on MATH and MMLU-pro benchmarks</figcaption></figure>
+
+<p>DyLLM also scales better with higher parallel decoding degrees ($n_u$, number of tokens unmasked per step) than baselines, as it avoids the rigid refresh overhead of fixed-schedule caching methods.</p>
+
+<h2>5. Limitations & Future Work</h2>
+<ul>
+<li><strong>Limitations</strong>: DyLLM requires custom CUDA kernels for maximal performance, and the optimal similarity threshold $\tau$ may need minor tuning for new model architectures or datasets. It is currently evaluated only on offline batched inference settings.</li>
+<li><strong>Future Work</strong>: The authors plan to extend DyLLM to larger MDLMs, integrate it with confidence-aware parallel decoding schemes to further boost throughput, optimize it for low-latency online inference, and combine it with speculative decoding techniques for hybrid autoregressive-diffusion generation pipelines.</li>
+</ul>
+<p>(Word count: 1487)</p>
+    </div>
+
+    <div class="footer">
+        <p>Summary generated by <a href="https://github.com/AlexHu-1215/InspiraX">InspiraX</a></p>
+    </div>
+</body>
+</html>

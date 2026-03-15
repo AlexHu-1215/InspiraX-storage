@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$Δ$VLA: Prior-Guided Vision-Language-Action Models via World Knowledge Variation</title>
+    <!-- KaTeX for LaTeX formula rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false}
+            ],
+            throwOnError: false
+        });"></script>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --fg: #1a1a2e;
+            --accent: #3a86ff;
+            --border: #e0e0e0;
+            --code-bg: #f5f5f5;
+            --blockquote-border: #3a86ff;
+            --blockquote-bg: #f0f4ff;
+            --fig-bg: #fafafa;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #1a1a2e;
+                --fg: #e0e0e0;
+                --accent: #6db3f2;
+                --border: #333355;
+                --code-bg: #16213e;
+                --blockquote-border: #6db3f2;
+                --blockquote-bg: #16213e;
+                --fig-bg: #16213e;
+            }
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.7;
+            color: var(--fg);
+            background: var(--bg);
+            max-width: 860px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+        .header {
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 1.6rem;
+            line-height: 1.3;
+            margin-bottom: 0.8rem;
+        }
+        .meta { color: #666; font-size: 0.9rem; }
+        .meta a { color: var(--accent); text-decoration: none; }
+        .meta a:hover { text-decoration: underline; }
+        .meta p { margin-bottom: 0.3rem; }
+        .content h2 {
+            font-size: 1.3rem;
+            margin-top: 2rem;
+            margin-bottom: 0.8rem;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.3rem;
+        }
+        .content h3 {
+            font-size: 1.1rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .content p { margin-bottom: 1rem; }
+        .content ul, .content ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+        .content li { margin-bottom: 0.4rem; }
+        .content blockquote {
+            border-left: 4px solid var(--blockquote-border);
+            background: var(--blockquote-bg);
+            padding: 0.8rem 1.2rem;
+            margin: 1rem 0;
+            font-style: italic;
+        }
+        .content code {
+            background: var(--code-bg);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        .content pre {
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+        .content pre code {
+            background: none;
+            padding: 0;
+        }
+        .content img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            display: block;
+            margin: 0 auto;
+        }
+        .content figure {
+            background: var(--fig-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+        .content figure img {
+            border: none;
+            margin: 0 auto 0.5rem;
+        }
+        .content figcaption {
+            font-size: 0.85rem;
+            color: #666;
+            font-style: italic;
+        }
+        .content strong { font-weight: 600; }
+        .footer {
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.85rem;
+            color: #999;
+        }
+        .katex-display {
+            overflow-x: auto;
+            padding: 0.5rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>$Δ$VLA: Prior-Guided Vision-Language-Action Models via World Knowledge Variation</h1>
+        <div class="meta">
+            <p><strong>Authors:</strong> Yijie Zhu, Jie He, Rui Shao, Kaishen Yuan, Tao Tan, Xiaochen Yuan, Zitong Yu</p>
+            <p><strong>Affiliations:</strong> Yijie Zhu is with Harbin Institute of Technology, Shenzhen, Shenzhen 518055, China, and Great Bay University, Dongguan 523000, China.; Jie He, Rui Shao are with Harbin Institute of Technology, Shenzhen, Shenzhen 518055, China.; Kaishen Yuan is with the Information Hub, The Hong Kong University of Science and Technology (Guangzhou), Guangzhou 511400, China.</p>
+            <p><strong>arXiv:</strong> <a href="https://arxiv.org/abs/2603.08361v1" target="_blank">https://arxiv.org/abs/2603.08361v1</a></p>
+            <p><strong>Published:</strong> 2026-03-09T13:26:05+00:00</p>
+            <p><strong>Generated by:</strong> InspiraX on 2026-03-15</p>
+        </div>
+    </div>
+
+    <div class="content">
+        <h1>Summary of ΔVLA: Prior-Guided Vision-Language-Action Models via World Knowledge Variation</h1>
+
+<h2>1. Overview</h2>
+<p>This paper addresses a critical limitation of existing Vision-Language-Action (VLA) models for robotic manipulation: state-of-the-art predictive VLA paradigms focus on forecasting absolute future visual or world states rather than reasoning about the action-induced change process that directly determines control quality. This leads to ungrounded, imagination-heavy predictions, redundant computation, and unstable conditioning for policy learning.</p>
+<p>The key insight of the proposed <strong>ΔVLA</strong> framework is to model discrete world-knowledge variations relative to an explicit, grounded current-world knowledge prior, instead of regressing absolute future states. This design prioritizes reasoning about what should change vs. remain invariant under a given instruction, providing a stable, compact interface for action generation while reducing perceptual redundancy.</p>
+<figure><img src="figures/intro.png" alt="Comparison of ΔVLA with prior VLA paradigms" loading="lazy"><figcaption>Comparison of ΔVLA with prior VLA paradigms</figcaption></figure>
+
+<h2>2. Key Contributions</h2>
+<ul>
+<li>A novel prior-guided VLA framework (ΔVLA) that models discrete world-knowledge variations conditioned on an explicit current-world prior for action generation, aligning perception, change reasoning, and control.</li>
+<li>The Prior-Guided World Knowledge Extractor (PWKE): constructs a causal anchor of current world knowledge (manipulable regions, semantic cues, depth cues) using auxiliary heads and pseudo labels to filter redundant perceptual information.</li>
+<li>Latent World Variation Quantization (LWVQ): learns a discrete latent space via a VQ-VAE objective to encode world-knowledge variations, shifting prediction from high-dimensional full modalities to compact, stable latents for policy conditioning.</li>
+<li>Conditional Variation Attention (CV-Atten): a structured attention mechanism that restricts each variation token to attend only to its corresponding world-knowledge prior, reducing cross-modality interference and enabling disentangled variation learning.</li>
+<li>State-of-the-art performance on both simulated and real-world robotic manipulation benchmarks, paired with superior inference and training efficiency compared to existing baselines.</li>
+</ul>
+<h2>3. Method</h2>
+<p>The overall ΔVLA architecture is shown below:</p>
+<figure><img src="figures/framework.png" alt="ΔVLA Overall Framework" loading="lazy"><figcaption>ΔVLA Overall Framework</figcaption></figure>
+<blockquote><p>"ΔVLA first extracts current world knowledge via the Prior-Guided World Knowledge Extractor, which encodes semantic, regional, and depth cues from SigLIP and DINOv2 guided by auxiliary heads and prior pseudo labels to form a unified world prior. These representations are concatenated with world variation tokens and modeled through the Conditional Variation Attention for structured perception–variation reasoning. Finally, the Latent World Variation Quantization module learns a discrete codebook representing world knowledge variations, providing causal guidance for variation token learning and consistent action generation."</p></blockquote>
+
+<h3>3.1 Prior-Guided World Knowledge Extractor (PWKE)</h3>
+<p>PWKE leverages complementary strengths of pre-trained encoders: SigLIP for semantic understanding, DINOv2 for spatial geometry. It uses two sets of learnable tokens: <em>region tokens</em> (to localize manipulable regions) and <em>world tokens</em> (to extract semantic and depth cues).</p>
+<figure><img src="figures/PWKE.png" alt="PWKE Module Illustration" loading="lazy"><figcaption>PWKE Module Illustration</figcaption></figure>
+<p>A structured attention mask restricts region tokens from attending to world tokens to keep them focused on raw visual observations:</p>
+<p>$$[\tilde{\mathit{O}}_t,\, \tilde{\mathbf{T}}_r,\, \tilde{\mathbf{T}}_w]</p>
+<p>= \text{SelfAttn}\big([\mathit{O}_t, \mathbf{T}_r,\mathbf{T}_w],\, \mathbf{M}\big)$$</p>
+<p>$$\mathbf{M}_{ij} =</p>
+<p>\begin{cases}</p>
+<p>-\infty, & i \in \mathcal{I}_r,\, j \in \mathcal{I}_w,\\</p>
+<p>0, & \text{otherwise},</p>
+<p>\end{cases}$$</p>
+<p>Where $\mathcal{I}_r$ and $\mathcal{I}_w$ are index sets of region and world tokens, respectively.</p>
+<p>FiLM modulation is used to align region extraction with the task instruction:</p>
+<p>$$\begin{aligned}</p>
+<p>f_{\text{R}}\!\big(\mathit{I}, [\tilde{\mathit{O}}_t, \tilde{\mathbf{T}}_r]\big)</p>
+<p>&= \big(1 + \gamma(\mathit{I})\big) \odot [\tilde{\mathit{O}}_t, \tilde{\mathbf{T}}_r]</p>
+<ul>
+<li>\beta(\mathit{I}),\\</li>
+</ul>
+<p>[\tilde{\mathit{O}}_t', \tilde{\mathbf{T}}_r']</p>
+<p>&= \text{FFN-R}\!\big(f_{\text{R}}(\mathit{I}, [\tilde{\mathit{O}}_t, \tilde{\mathbf{T}}_r])\big),</p>
+<p>\end{aligned}$$</p>
+<p>Where $\gamma(\mathit{I})$ and $\beta(\mathit{I})$ are instruction-generated scale/shift vectors, $\odot$ denotes element-wise multiplication, and FFN-R is a region-specific feed-forward network.</p>
+<p>Auxiliary training heads supervise token learning using pseudo labels: motion masks for manipulable regions, Depth-Anything v2 outputs for depth, and SAM features for semantics. These heads are discarded at inference, adding no overhead.</p>
+
+<h3>3.2 Latent World Variation Quantization (LWVQ)</h3>
+<p>LWVQ encodes continuous world knowledge variations into a discrete latent space via a VQ-VAE objective, avoiding the computational cost of full future modality prediction:</p>
+<p>$${\mathit{W}}_{t+n} =</p>
+<p>\text{Dec}\!\Big(</p>
+<p>\mathit{W}_t,\,</p>
+<p>\underbrace{\text{Quant}\big(\text{Enc}(\mathit{W}_t,\, \mathit{W}_{t+n})\big)}_{\Delta\mathit{W}_{t\rightarrow t+n}}</p>
+<p>\Big)$$</p>
+<p>Where $\text{Enc}$ and $\text{Dec}$ are the LWVQ encoder/decoder, $\text{Quant}$ maps continuous latents to the nearest entry in a learnable variation codebook, and $\Delta W_{t\rightarrow t+n}$ is the discrete world-knowledge variation between timestep $t$ and future timestep $t+n$.</p>
+
+<h3>3.3 Conditional Variation Attention (CV-Atten)</h3>
+<p>CV-Atten uses a structured masking strategy to reduce cross-modality leakage during variation reasoning, ensuring each variation token only attends to its corresponding world prior:</p>
+<figure><img src="figures/mask.png" alt="CV-Atten Mask Illustration" loading="lazy"><figcaption>CV-Atten Mask Illustration</figcaption></figure>
+<p>The unified reasoning pass through the LLM backbone is defined as:</p>
+<p>$$[\tilde{\mathbf{T}}_{\textit{var}}',\, \mathit{A}_{t:t+n-1}] =</p>
+<p>f_{\text{LLM}}\big([\mathit{W}_t,\, \mathit{I},\, \mathbf{T}_{\textit{var}},\, \mathbf{T}_{\textit{act}}], \mathbf{M}_{cv}\big)$$</p>
+<p>Where $\mathbf{M}_{cv}$ is the CV-Atten mask, $\mathbf{T}_{var}$ are variation tokens, $\mathbf{T}_{act}$ are action tokens, and $\mathit{A}_{t:t+n-1}$ is the output $n$-step action sequence.</p>
+<p>The total training loss combines action prediction, variation reconstruction, and prior extraction losses:</p>
+<p>$$\mathcal{L} = \mathcal{L}_{\text{act}} + \lambda_{\text{var}}\mathcal{L}_{\text{var}} + \lambda_{\text{cur}}\mathcal{L}_{\text{cur}}$$</p>
+<p>Where $\mathcal{L}_{act}$ is L1 loss for action regression, $\mathcal{L}_{var}$ and $\mathcal{L}_{cur}$ are MSE losses for variation and prior reconstruction respectively.</p>
+
+<h2>4. Experiments</h2>
+<h3>4.1 Setup</h3>
+<p>The model is evaluated on two simulation benchmarks: 4 task suites of LIBERO, 8 tasks from RoboTwin 2.0, and 4 long-horizon real-world tasks on two robotic platforms (Galaxea R1 Lite, AgileX Cobot Magic). It is compared against 12 state-of-the-art VLA baselines including OpenVLA, $\pi_0$, DreamVLA, and CoT-VLA.</p>
+
+<h3>4.2 Quantitative Results</h3>
+<ul>
+<li><strong>Simulation</strong>: ΔVLA achieves 97.8% average success rate (SR) on LIBERO (1st rank, +0.7% over the next best baseline) and 80.4% average SR on RoboTwin 2.0 (+6.5% over the next best baseline).</li>
+<li><strong>Real-world</strong>: ΔVLA achieves 72% average full-task SR on Galaxea R1 Lite and 69% on AgileX Cobot Magic, outperforming all baselines by 17-36% across tasks.</li>
+<li><strong>Efficiency</strong>: ΔVLA reaches 0.105s inference latency, 76.2 Hz throughput, and 4.9h training time per 10k steps, outperforming all baselines on efficiency metrics while retaining top performance.</li>
+<li><strong>Ablations</strong>: All components contribute to performance gains: PWKE improves long-horizon SR by 0.8%, LWVQ by 1.2%, and CV-Atten by 0.8% on the LIBERO Long suite.</li>
+</ul>
+<h3>4.3 Qualitative Results</h3>
+<figure><img src="figures/vis_knowledge.png" alt="World Knowledge Extraction Visualization" loading="lazy"><figcaption>World Knowledge Extraction Visualization</figcaption></figure>
+<p>The figure above visualizes PWKE outputs: manipulable regions, semantic masks, and depth maps aligned with task instructions.</p>
+<figure><img src="figures/vis_atten.png" alt="CV-Atten Attention Visualization" loading="lazy"><figcaption>CV-Atten Attention Visualization</figcaption></figure>
+<p>The attention visualization confirms CV-Atten restricts cross-modality attention, with each variation token only attending to its corresponding prior.</p>
+<figure><img src="figures/add_vis_real.png" alt="Real-World Task Execution Visualization" loading="lazy"><figcaption>Real-World Task Execution Visualization</figcaption></figure>
+<p>The figure shows ΔVLA executing multi-step real-world tasks (drawer manipulation, shoe alignment, T-shirt folding, fruit placement).</p>
+<figure><img src="figures/add_vis_real_comparison.png" alt="Real-World Performance Comparison Visualization" loading="lazy"><figcaption>Real-World Performance Comparison Visualization</figcaption></figure>
+<p>The comparison shows ΔVLA outperforms baselines on all real-world task stages, with minimal error accumulation across long horizons.</p>
+
+<h2>5. Limitations & Future Work</h2>
+<ul>
+<li><strong>Limitations</strong>: The current variation codebook size is fixed, requiring manual tuning for different task sets. The method relies on external pre-trained models for pseudo label generation, introducing minor domain dependency.</li>
+<li><strong>Future Work</strong>: Explore adaptive codebook sizing for varying task complexity, integrate self-supervised pseudo label generation to reduce external dependencies, and extend the framework to bimanual and mobile manipulation tasks with dynamic environments.</li>
+</ul>
+    </div>
+
+    <div class="footer">
+        <p>Summary generated by <a href="https://github.com/AlexHu-1215/InspiraX">InspiraX</a></p>
+    </div>
+</body>
+</html>
